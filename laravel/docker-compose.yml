@@ -1,0 +1,31 @@
+version: '2'
+services:
+    web:
+        build: ./docker/web
+        volumes:
+            - .:/var/www/laravel
+        ports:
+            - "8081:80"
+        links:
+            - app
+
+    app:
+        build: ./docker/app
+        volumes:
+            - .:/var/www/laravel
+        links:
+            - database
+        environment:
+            - LARAVEL_STORAGE_PATH=/var/www/laravel/storage
+            - LARAVEL_CACHE_PATH=/var/www/laravel/bootstrap/cache
+            - DB_PORT=3306
+            - DB_HOST=database
+
+    database:
+        image: mysql:5.7
+        volumes:
+            - ./storage/mysql:/var/lib/mysql
+        env_file:
+            - ./docker/mysql.env
+        ports:
+            - "33061:3306"

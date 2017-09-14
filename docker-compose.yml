@@ -1,0 +1,43 @@
+version: '2'
+services:
+    web:
+        build: ./laravel/docker/web
+        volumes:
+            - ./laravel:/var/www/laravel
+        ports:
+            - "8081:80"
+        links:
+            - app
+
+    frontend:
+        build: ./react
+        volumes:
+            - ./react:/react
+            - /react/node_modules
+        links:
+            - web
+        ports:
+            - "3000:3000"
+        working_dir: /react
+        entrypoint: yarn start
+
+    app:
+        build: ./laravel/docker/app
+        volumes:
+            - ./laravel:/var/www/laravel
+        links:
+            - database
+        environment:
+            - LARAVEL_STORAGE_PATH=/var/www/laravel/storage
+            - LARAVEL_CACHE_PATH=/var/www/laravel/bootstrap/cache
+            - DB_PORT=3306
+            - DB_HOST=database
+
+    database:
+        image: mysql:5.7
+        volumes:
+            - ./laravel/storage/mysql:/var/lib/mysql
+        env_file:
+            - ./laravel/docker/mysql.env
+        ports:
+            - "33061:3306"
